@@ -1,0 +1,29 @@
+package com.example.demo;
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+public interface LearningDataRepository extends MongoRepository<LearningDataManager, String> {
+	
+	//	すべてのデータを取得する
+	List<LearningDataManager> findAll();
+	
+//	// 日付を指定して取得する
+//    List<LearningData> findByStartTimeBetweenAndLearningTimeBetween(
+//    		LocalDateTime startTime,
+//    		LocalDateTime endTime,
+//    		Integer lowerLearningTime,
+//    		Integer upperLearningTime
+//    		);
+    
+    List<LearningDataManager> findByStartTimeHourBetween(int startHour, int endHour);
+    
+    List<YourEntityProjection> findByYourDateFieldAndYourEntityField(LocalDate fromDate, LocalDate toDate);
+
+    // YourEntityProjection クラスは、指定のキーだけを持つ専用のプロジェクションクラスです
+    interface YourEntityProjection {
+        String getSpecificKey();
+    }
+
+}

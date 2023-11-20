@@ -1,0 +1,21 @@
+package com.example.demo;
+import java.util.List;
+
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+public interface LearningDateRepository extends MongoRepository<LearningDateManager, String> {
+	
+	//	すべてのデータを取得する
+	List<LearningDateManager> findAll();
+	
+//	// 日付を指定して取得する
+//    List<LearningData> findByStartTimeBetweenAndLearningTimeBetween(
+//    		LocalDateTime startTime,
+//    		LocalDateTime endTime,
+//    		Integer lowerLearningTime,
+//    		Integer upperLearningTime
+//    		);
+    
+    List<LearningDateManager> findByStartTimeHourBetween(int startHour, int endHour);
+
+}

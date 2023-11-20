@@ -1,0 +1,46 @@
+package com.example.demo;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.demo.request.RequestSetting;
+
+@RestController
+@RequestMapping("/setting")
+public class SettingController {
+	private SettingService settingService;
+
+    public SettingController(SettingService settingService) {
+        this.settingService = settingService;
+    }
+    
+    @GetMapping
+    public ResponseEntity<SettingManager> getSetting(@RequestParam int userID) {
+    	SettingManager settingData = settingService.getSettingData(userID);
+        
+        return ResponseEntity.ok(settingData);
+    }
+    
+    @PostMapping("/")
+    public ResponseEntity<SettingManager> getSetting(@RequestBody RequestSetting requestSetting) {
+    	int userID = requestSetting.getUserID();
+    	SettingManager settingData = settingService.getSettingData(userID);
+        
+        return ResponseEntity.ok(settingData);
+    }
+    
+    @PutMapping("/")
+    public SettingManager updateSetting(@RequestBody RequestSetting requestSetting) {
+    	int userID = requestSetting.getUserID();
+    	int concentrationTime = requestSetting.getConcentrationTime();
+    	int openTime = requestSetting.getOpenTime();
+    	int targetTime = requestSetting.getTargetTime();
+        return settingService.updateSettingData(userID, concentrationTime, openTime, targetTime); 
+    }
+}

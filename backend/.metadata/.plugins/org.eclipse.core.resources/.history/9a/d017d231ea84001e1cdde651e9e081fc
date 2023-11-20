@@ -1,0 +1,111 @@
+package com.example.demo;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.stereotype.Service;
+
+@Service
+public class LearningService {
+	private final LearningDataRepository learningRepository;
+	private final SettingRepository settingRepository;
+	private final MongoTemplate mongoTemplate;
+
+    public LearningService(LearningDataRepository learningRepository, SettingRepository settingRepository, MongoTemplate mongoTemplate) {
+        this.learningRepository = learningRepository;
+        this.settingRepository = settingRepository;
+        this.mongoTemplate = mongoTemplate;
+    }
+
+    public LearningDataManager createLearningData(int userID, LocalDateTime startDate, LocalDateTime endDate) {
+//    	ユーザーIDと開始時間、終了時間を渡すと、差分から学習時間を計算してlearing_timeコレクションに追加する
+		LearningDataManager learningData = new LearningDataManager();
+		Duration learningTime = Duration.between(startDate, endDate);
+		//        Duration convertLearningTime = LearningUtils.convertLearingTime(learningTime);
+		learningData.setUserID(userID);
+		learningData.setStartTime(startDate);
+		learningData.setEndTime(endDate);
+		learningData.setLearningTime(learningTime);
+
+		return learningRepository.save(learningData);
+    }
+
+    public List<LearningDataManager> getLearningData(
+    		LocalDateTime lowerStartDate,
+    		LocalDateTime upperStartDate,
+    		LocalDateTime lowerEndDate,
+    		LocalDateTime upperEndDate,
+    		Integer lowerLearningTime,
+    		Integer upperLearningTime
+    ) {
+    	Criteria criteria = new Criteria();
+
+    	if (lowerStartDate != null) {
+            criteria = criteria.and("startTime").gte(lowerStartDate);
+        }
+        if (upperStartDate != null) {
+            criteria = criteria.and("startTime").lte(upperStartDate);
+        }
+        if (lowerEndDate != null) {
+            criteria = criteria.and("endTime").gte(lowerEndDate);
+        }
+        if (upperEndDate != null) {
+            criteria = criteria.and("endTime").lte(upperEndDate);
+        }
+        if (lowerLearningTime != null || upperLearningTime != null) {
+            Criteria learningTimeCriteria = new Criteria("learningTime");
+
+            if (lowerLearningTime != null) {
+                learningTimeCriteria = learningTimeCriteria.gte(lowerLearningTime);
+            }
+            if (upperLearningTime != null) {
+                learningTimeCriteria = learningTimeCriteria.lte(upperLearningTime);
+            }
+
+            criteria = criteria.andOperator(learningTimeCriteria);
+        }
+
+        Query query = new Query(criteria);
+
+        // MongoDBでデータを取得
+        List<LearningDataManager> result = mongoTemplate.find(query, LearningDataManager.class);
+        
+        return result;
+    	
+    }
+
+    public void deleteLearningData(String sessionId) {
+        learningRepository.deleteById(sessionId);
+    }
+
+    public void updateLearningData(String sessionId, LocalDateTime newStartTime, LocalDateTime newEndTime) {
+        LearningDataManager sessionToUpdate = learningRepository.findById(sessionId).orElse(null);
+        if (sessionToUpdate != null) {
+        	sessionToUpdate.setStartTime(newStartTime);
+            sessionToUpdate.setEndTime(newEndTime);
+            learningRepository.save(sessionToUpdate);
+        }
+    }
+    
+//    public SettingManager getSettingData(int userID) {
+//    	SettingManager settingManager = new SettingManager();
+//        settingManager.setUserID(userID);
+//        SettingManager  settingData= settingRepository.findByUserID(userID);
+//        return settingData;
+//    }
+//    
+//    public  SettingManager updateSettingData(int userID, int concentrationTime, int openTime, int targetTime) {
+//        SettingManager settingData = getSettingData(userID);
+//        if (settingData != null) {
+//        	settingData.setConcentrationTime(concentrationTime);
+//            settingData.setOpenTime(openTime);
+//            settingData.setTargetTime(targetTime);
+//        } else {
+////        	ユーザーが存在しませんのエラーを後で書く
+//        }
+//        return settingRepository.save(settingData);
+//    }
+}
